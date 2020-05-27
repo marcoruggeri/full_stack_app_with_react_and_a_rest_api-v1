@@ -54,7 +54,8 @@ export default class UpdateCourse extends Component {
                                                     type="text"
                                                     value={title}
                                                     onChange={this.change}
-                                                    placeholder="Course Title..." />
+                                                    placeholder="Course Title..." 
+                                                    required />
                                             </div>
                                             <p>{`By ${firstName} ${lastName}`}</p>
                                         </div>
@@ -77,7 +78,8 @@ export default class UpdateCourse extends Component {
                                                             type="text"
                                                             value={estimatedTime}
                                                             onChange={this.change}
-                                                            placeholder="Hours" />
+                                                            placeholder="Hours" 
+                                                            required />
                                                     </div>
                                                 </li>
                                                 <li className="course--stats--list--item">

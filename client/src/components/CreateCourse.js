@@ -45,13 +45,14 @@ export default class CreateCourse extends Component {
                                                 type="text"
                                                 value={title}
                                                 onChange={this.change}
-                                                placeholder="Course Title..." />
+                                                placeholder="Course Title..."
+                                                required />
                                         </div>
                                         <p>{`By ${firstName} ${lastName}`}</p>
                                     </div>
                                     <div className="course--description">
                                         <div>
-                                            <textarea id="description" name="description" value={description} onChange={this.change} placeholder="Course Description..." ></textarea>
+                                            <textarea id="description" name="description" value={description} onChange={this.change} placeholder="Course Description..." required></textarea>
                                         </div>
                                     </div>
                                 </div>
