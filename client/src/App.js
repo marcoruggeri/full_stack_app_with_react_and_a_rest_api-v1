@@ -16,7 +16,7 @@ import CreateCourse from './components/CreateCourse';
 import CourseDetail from './components/CourseDetail';
 import UpdateCourse from './components/UpdateCourse';
 import Forbidden from './components/Forbidden';
-import UnhandledError, { ErrorBoundary } from './components/UnhandledError';
+//import UnhandledError, { ErrorBoundary } from './components/UnhandledError';
 
 import withContext from './Context';
 import PrivateRoute from './PrivateRoute';
@@ -46,7 +46,7 @@ export default () => (
         <Route path="/signup" component={UserSignUpWithContext} />
         <Route path="/signout" component={UserSignOutWithContext} />
         <Route path="/forbidden" component={Forbidden} />
-        <Route path="/error" component={UnhandledError} />
+
         <Route component={NotFound} />
       </Switch>
       
