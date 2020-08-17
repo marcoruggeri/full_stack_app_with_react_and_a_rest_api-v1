@@ -206,34 +206,34 @@ router.get("/courses/:id", async (req, res, next) => {
 router.post(
   "/courses",
   [
-    check("title").exists().withMessage('Please provide a value for "title"'),
+    check("title")
+      .exists({ checkNull: true, checkFalsy: true })
+      .withMessage('Please provide a value for "title"'),
     check("description")
-      .exists()
+      .exists({ checkNull: true, checkFalsy: true })
       .withMessage('Please provide a value for "description"'),
   ],
-  validate,
   authenticate,
-  async (req, res, next) => {
-    try {
-      const credentials = auth(req);
-      const currentUser = await User.findOne({
-        where: { emailAddress: credentials.name },
-      });
-      const newCourse = await Course.create({
-        title: req.body.title,
-        description: req.body.description,
-        estimatedTime: req.body.estimatedTime || null,
-        materialsNeeded: req.body.materialsNeeded || null,
-        userId: req.body.userId ? req.body.userId : currentUser.id,
-      });
+  asyncHandler(async (req, res) => {
+    const errors = validationResult(req);
 
-      // Set the location to '/courses/id', the status to 201 Created, and end the response.
-      return res.status(201).location(`/courses/${newCourse.id}`).end();
-    } catch (error) {
-      console.log(error);
-      res.json({ error: `${error}` });
+    if (!errors.isEmpty()) {
+      const errorMessages = errors.array().map((error) => error.msg);
+      return res.status(400).json({ errors: errorMessages });
     }
-  }
+
+    const course = await models.Course.create({
+      title: req.body.title,
+      description: req.body.description,
+      estimatedTime: req.body.estimatedTime,
+      materialsNeeded: req.body.materialsNeeded,
+      userId: req.currentUser.id,
+    });
+
+    const id = course.id;
+
+    res.location(`/courses/${id}`).status(201).end();
+  })
 );
 
 /**
@@ -242,57 +242,39 @@ router.post(
 router.put(
   "/courses/:id",
   [
-    check("title").exists().withMessage('Please provide a value for "title"'),
+    check("title")
+      .exists({ checkNull: true, checkFalsy: true })
+      .withMessage("Please provide a value for title"),
     check("description")
-      .exists()
-      .withMessage('Please provide a value for "description"'),
+      .exists({ checkNull: true, checkFalsy: true })
+      .withMessage("Please provide a value for description"),
   ],
-  validate,
   authenticate,
-  async (req, res, next) => {
-    try {
-      const credentials = auth(req);
-      const user = await User.findOne({
-        where: { emailAddress: credentials.name },
-      });
-      const course = await Course.findOne({ where: { id: req.params.id } });
-      if (user.id === course.userId) {
-        next();
-      } else {
-        res.status(403).json({
-          error:
-            "The course you are attempting to modify is owned by a different user",
-        });
-      }
-    } catch (err) {
-      next(err);
+  asyncHandler(async (req, res) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      const errorMessages = errors.array().map((error) => error.msg);
+      return res.status(400).json({ errors: errorMessages });
     }
-  },
-  async (req, res, next) => {
-    try {
-      const updates = req.body;
-      const currentCourse = await Course.findOne({
-        where: { id: req.params.id },
-      });
-      const updatedCourse = await Course.update(
+    const course = await models.Course.findByPk(req.params.id);
+    const user = req.currentUser;
+
+    if (course.userId === user.id) {
+      await models.Course.update(
         {
-          title: updates.title,
-          description: updates.description,
-          estimatedTime: updates.estimatedTime
-            ? updates.estimatedTime
-            : currentCourse.estimatedTime,
-          materialsNeeded: updates.materialsNeeded
-            ? updates.materialsNeeded
-            : currentCourse.materialsNeeded,
-          userId: updates.userId ? updates.userId : currentCourse.userId,
+          title: req.body.title,
+          description: req.body.description,
+          estimatedTime: req.body.estimatedTime,
+          materialsNeeded: req.body.materialsNeeded,
         },
         { where: { id: req.params.id } }
       );
-      return res.status(204).end();
-    } catch (err) {
-      next(err);
+      res.status(204).end();
+    } else {
+      res.status(403).json("Wrong credentials");
     }
-  }
+  })
 );
 
 /**
